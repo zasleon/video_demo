@@ -2,7 +2,7 @@
 题目：用FFmpeg和SDL对视频进行解码并播放ZasLeonPlayer
 
 环境：
-windows 7
+windows 7\n
 Visual Studio 2010
 FFmpeg-n4.3.1-30-g666d2fc6e2-win64-gpl-shared-4.3
 SDL2-2.0.14
