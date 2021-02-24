@@ -1,6 +1,8 @@
 # video_demo
 题目：用FFmpeg和SDL对视频进行解码并播放ZasLeonPlayer
 
+代码依旧存在的问题：播放mp3时，显示的图片会失真。。。
+
 环境：
 
 windows 7
