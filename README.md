@@ -1,5 +1,6 @@
 # video_demo
-题目：用FFmpeg和SDL对视频进行解码并播放ZasLeonPlayer
+题目：C++用FFmpeg和SDL实现音视频同步播放
+ZasLeonPlayer
 
 代码依旧存在的问题：播放mp3时，显示的图片会失真。。。
 
