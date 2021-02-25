@@ -1,4 +1,4 @@
-# video_demo
+# FFmpeg_video_demo
 题目：C++用FFmpeg和SDL实现音视频同步播放
 ZasLeonPlayer
 
