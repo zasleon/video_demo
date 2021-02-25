@@ -28,294 +28,321 @@ extern "C"
 #pragma  comment(lib,"swresample.lib")
 #pragma  comment(lib,"swscale.lib")
 
-//char rtspUrl[] = "F:\\JY\\www.NewXing.com\\moive\\É±Â¾¶¼ÊĞ£ºOBDÈÕÓïÖĞ×Ö1280¸ßÇå[www.66ys.tv].rmvb";
+char rtspUrl[] = "F:\\JY\\www.NewXing.com\\moive\\æ€æˆ®éƒ½å¸‚ï¼šOBDæ—¥è¯­ä¸­å­—1280é«˜æ¸…[www.66ys.tv].rmvb";
 //char rtspUrl[] = "F:\\JY\\www.NewXing.com\\moive\\btest\\Wildlife.wmv";
-//char rtspUrl[] = "F:\\JY\\www.NewXing.com\\moive\\ÎÒÃÇ¶¼ÊÇ³¬ÄÜÁ¦Õß£¡.mp4";
-//char rtspUrl[] = "F:\\JY\\www.NewXing.com\\moive\\Ó¢ĞÛÁªÃË .mp3";
+//char rtspUrl[] = "F:\\JY\\www.NewXing.com\\moive\\æˆ‘ä»¬éƒ½æ˜¯è¶…èƒ½åŠ›è€…ï¼.mp4";
+//char rtspUrl[] = "F:\\JY\\www.NewXing.com\\moive\\è‹±é›„è”ç›Ÿ .mp3";
 //char rtspUrl[] = "F:\\JY\\www.NewXing.com\\moive\\Kalimba.mp3";
-//char rtspUrl[] = "F:\\JY\\www.NewXing.com\\moive\\2020Ó¢ĞÛÁªÃËÈü¼¾CG¡¶Warriors¡·¶¯»­µçÓ°¡£ - ÊÓÆµ - ÍøÒ×ÔÆÒôÀÖ.mp4";
-char rtspUrl[] = "123123.mp4";
+//char rtspUrl[] = "F:\\JY\\www.NewXing.com\\moive\\hc\\123123.mp4";
+//char rtspUrl[] = "F:\\JY\\www.NewXing.com\\moive\\don diablo.mp4";
+
+const int my_width=1280;//è‡ªå·±ç”µè„‘åˆ†è¾¨ç‡ï¼Œè¶…è¿‡åˆ™åœ¨æ˜¾ç¤ºæ—¶è¿›è¡Œé™åˆ¶
+const int my_height=800;
+
+//---------------------------------------------------å¯¹éŸ³é¢‘è¾“å‡ºçš„é€»è¾‘æ§åˆ¶----------------------------
 #define SDL_AUDIO_BUFFER_SIZE 1024
-const int bufnumber=4;//ÉèÖÃÄÚ´æ¿éÎª4¸ö
-static int audio_buf_read_index[bufnumber],audio_buf_write_index[bufnumber];//ÄÚ´æ¿éÄÚ²¿¶ÁĞ´Æ«ÒÆÁ¿
-static uint8_t audiobuf[bufnumber][44100*16*2*4];//ÄÚ´æ¿é
-static int write_count,read_count;//µ±Ç°¶Á»òĞ´µÄÄÚ´æ¿é
-static bool next_write;//ÒôÆµĞ´ÈëÄÚ´æ·şÎñ¿ÉÒÔ¼ÌĞøÁË
-static bool output_over;//ÒôÆµÊä³ö½áÊøÁË
-static int get_number,queque_number;//get_number»ñÈ¡¶ÓÁĞºÅ¡¢queque_numberµ±Ç°¶ÓÁĞºÅ
-static int video_pace,audio_pace;//È·ÈÏµ±Ç°½ø¶È£¬±£Ö¤ÊÓÆµÒôÆµÍ¬²½
-static int AudioIndex,VideoIndex;//È«¾ÖÈ·ÈÏ¸ÃÖ¡ÊÇ·ñÊÇÒôÆµÖ¡»òÊÓÆµÖ¡
-bool audio_over;//ÒôÆµÊÇ·ñ½áÊø£¬trueÎª½áÊø£¬falseÎªÃ»½áÊø
-static int output_number,audio_fre;//»Øµ÷ÒôÆµlenÀÛ¼Æ²¥·ÅÊı,ÒôÆµ²ÉÑùÂÊ
+const int bufnumber=4;//è®¾ç½®å†…å­˜å—ä¸º4ä¸ª
+const int single_buf_size=4410000;//å•å—å†…å­˜å—çš„å¤§å°
+static int audio_buf_read_index[bufnumber],audio_buf_write_index[bufnumber];//å†…å­˜å—å†…éƒ¨è¯»å†™åç§»é‡
+static uint8_t audiobuf[bufnumber][single_buf_size];//éŸ³é¢‘æ•°æ®å†…å­˜å—
+static int write_count,read_count;//è®°å½•å½“å‰åœ¨è¯»æˆ–å†™çš„å†…å­˜å—
+static bool next_write;//éŸ³é¢‘å†™å…¥å†…å­˜æœåŠ¡å¯ä»¥ç»§ç»­äº†ï¼ˆå†™æœåŠ¡æ˜¯ä¸€ä¸‹å­å†™å®Œå½“å‰å†…å­˜å—ï¼Œè¿›è¡Œç­‰å¾…ã€‚æ’­æ”¾åŠŸèƒ½å‘é€è¯¥æŒ‡ä»¤next_writeï¼ˆä½ å¯ä»¥å…ˆå†™ä¸‹ä¸€å—äº†ï¼‰åæ‰è¿›è¡Œä¸‹ä¸€å—å†…å­˜å—çš„å†™å…¥ï¼‰
+static bool output_over;//éŸ³é¢‘è¾“å‡ºç»“æŸäº†
+static int get_number,queque_number;//get_numberè·å–é˜Ÿåˆ—å·ã€queque_numberå½“å‰é˜Ÿåˆ—å·
+static float video_pace,audio_pace;//ç¡®è®¤å½“å‰è¿›åº¦ï¼Œä¿è¯è§†é¢‘éŸ³é¢‘åŒæ­¥
+static int AudioIndex,VideoIndex;//å…¨å±€ç¡®è®¤è¯¥å¸§æ˜¯å¦æ˜¯éŸ³é¢‘å¸§æˆ–è§†é¢‘å¸§
+bool audio_over;//éŸ³é¢‘æ˜¯å¦ç»“æŸï¼Œtrueä¸ºç»“æŸï¼Œfalseä¸ºæ²¡ç»“æŸ
+static int audio_framesize,audio_fre;//å•å¸§éŸ³é¢‘æ•°æ®å¤§å°,éŸ³é¢‘é‡‡æ ·ç‡
 
-const int my_width=1024;//×Ô¼ºµçÄÔ·Ö±æÂÊ£¬³¬¹ıÔòÔÚÏÔÊ¾Ê±½øĞĞÏŞÖÆ
-const int my_height=768;
+//---------------------------------------------------å¯¹éŸ³é¢‘è¾“å‡ºçš„é€»è¾‘ç»“æŸ----------------------------
 
-
-
-void audio_callback(void *userdata, Uint8 *stream, int len) 
+void audio_callback(void *userdata, Uint8 *stream, int len) //éŸ³é¢‘å›è°ƒå‡½æ•°ï¼ŒSDL_OpenAudioä½¿ç”¨åä¼šæ— é™å¾ªç¯ä½¿ç”¨è¯¥å‡½æ•°ï¼Œç›´åˆ°ä½¿ç”¨SDL_closeAudioï¼Œå¦‚æœä¸closeåˆ™SDL_Quitæ— é™é˜»å¡
 {
-	int my_number=get_number;//´Ó·şÎñ»ñÈ¡ºÅÂë
-	if(get_number==10000)//Èç¹û·şÎñºÅÂë¹ı´ó
-		get_number=0;//·şÎñºÅÂëÖØÖÃÎª0
-	else
-		get_number++;//·şÎñºÅÂë+1
-	while(queque_number!=my_number){};//¶ÓÁĞºÅÂëÃ»ÂÖµ½×Ô¼º£¬½øĞĞµÈ´ı
-	if(output_over)return;
-	if(audio_fre<(len+output_number))
-	{
-		audio_pace++;
-		output_number=len+output_number-audio_fre;
-	}
-	else
-		output_number=output_number+len;
 	
-
-	//memcpy(stream, audiobuf[read_count]+audio_buf_read_index, len);//½«×Ô¼ºĞ¯´øĞÅÏ¢½øĞĞ²¥·Å,¾İËµmemcpyÕâÑùÖ±½Ó×ö»áÔì³ÉÊ§Õæ£¬ÓÃÒÔÏÂÁ½¾ä´úÌæ
-	SDL_memset(stream, 0, len);
-	SDL_MixAudio(stream,audiobuf[read_count]+audio_buf_read_index[read_count],len,SDL_MIX_MAXVOLUME);//ºËĞÄ¹¦ÄÜ¾ä£¬½«Ö¡ÖĞ½âÎö³öÀ´µÄÊı¾İÁ÷ÊäÈëstream²¢Êä³ö
-
-	audio_buf_read_index[read_count]+= len;//È·¶¨ÏÂÒ»¶ÎÒª²¥·ÅµÄĞÅÏ¢
-	int let_write=5;//ÌáÇ°¶àÉÙÊ±¼ä£¬ÈÃĞ´ÈëÒôÆµ·şÎñ½øĞĞĞ´Èë£¬·ÀÖ¹ÒôÆµÊä³ö¿¨¶Ù
-	if(audio_buf_read_index[read_count]>(audio_buf_write_index[read_count]-len*let_write))//Èç¹û¶ÁÈ¡ÄÚ´æ¿é¼´½«µ½Í·£¬Õâ¸ölen*5¿ÉÒÔ×ÔĞĞ¿ØÖÆ£¬5¸Ä³É6»ò7Ö®ÀàµÄ£¬±£Ö¤ÇĞ»»Ê±²»¿¨¶Ù
-		if(audio_buf_read_index[read_count]>=(audio_buf_write_index[read_count]-len))//Èç¹ûÄÚ´æ³¹µ×µ½Í·£¬Ã»ÏÂÒ»¶ÎÒª²¥·ÅµÄĞÅÏ¢ÁË£¬ÇĞ»»ÄÚ´æÌõ
-		{
-			audio_buf_read_index[read_count]=0;//ÄÚ´æÆ«ÒÆÁ¿ÖÃ0
-			audio_buf_write_index[read_count]=0;//ÄÚ´æÆ«ÒÆÁ¿ÖÃ0
-			memset(audiobuf[read_count],0,sizeof(audiobuf[read_count]));
-			read_count++;//ÇĞ»»ÏÂÒ»¸öÄÚ´æ¿é½øĞĞ¶ÁÈ¡
-			if(read_count>=bufnumber)read_count=0;//Èç¹ûÒÑ¾­ÊÇ×î´óÄÚ´æ¿éÁË£¬ÖØĞÂ¶ÁÈ¡×î³õµÄÄÚ´æ¿é
-			audio_buf_read_index[read_count]=0;
-			cout<<read_count<<"ÇĞ»»¶Á\n";
-			if(audio_over&&audio_buf_write_index[read_count]==0){output_over=true;cout<<"½áÊøÁË\n";}
-		}
-		else
-			if(audio_buf_read_index[read_count]<=(audio_buf_write_index[read_count]-len*(let_write-1)))
-				next_write=true;//Èç¹ûÄÚ´æ¿é¼´½«µ½Í·£¬µ«»¹Ã»³¹µ×µ½Í·£¬ÔÚÄ³Ò»ÌØ¶¨Î»ÖÃ£¬Í¨ÖªÒôÆµĞ´ÈëÄÚ´æ·şÎñ¿ÉÒÔ¼ÌĞøÁË
-	if(queque_number==10000)
-		{queque_number=0;}//¶ÓÁĞºÅÂëË¢ĞÂÎª-1
+	int my_number=get_number;//ä»æœåŠ¡è·å–å·ç 
+	if(get_number==10000)//å¦‚æœæœåŠ¡å·ç è¿‡å¤§
+		get_number=0;//æœåŠ¡å·ç é‡ç½®ä¸º0
 	else
-		queque_number++;//¶ÓÁĞºÅÂë+1£¬ÏÂÒ»¸öÄÃµ½ºÅÂëµÄ¿ÉÒÔ¿ªÊ¼²¥·ÅÁË
+		get_number++;//æœåŠ¡å·ç +1
+	while(queque_number!=my_number){};//é˜Ÿåˆ—å·ç æ²¡è½®åˆ°è‡ªå·±ï¼Œè¿›è¡Œç­‰å¾…
+	if(output_over)return;//å¦‚æœå®£å¸ƒç»“æŸäº†,è¿”å›
+	
+	audio_pace+=0.01;//float(len)/float(audio_framesize)*float(1024)/float(audio_fre);//æ›´æ–°éŸ³é¢‘æ’­æ”¾åˆ°çš„æ—¶é—´
+
+
+	int let_write=6;//åœ¨è¯»å–åˆ°å†…å­˜å—æŸå¤„ï¼ˆlet_writeå¤„ï¼‰æ—¶ï¼Œå‘é€next_writeæŒ‡ä»¤è®©å†™å…¥éŸ³é¢‘æœåŠ¡å¼€å§‹å†™å…¥ä¸‹ä¸€å—å†…å­˜å—
+
+	//memcpy(stream, audiobuf[read_count]+audio_buf_read_index, len);//å°†è‡ªå·±æºå¸¦ä¿¡æ¯è¿›è¡Œæ’­æ”¾,æ®è¯´memcpyè¿™æ ·ç›´æ¥åšä¼šé€ æˆå¤±çœŸï¼Œç”¨ä»¥ä¸‹ä¸¤å¥ä»£æ›¿SDL_memset,SDL_MixAudio
+	SDL_memset(stream, 0, len);
+	if(len+audio_buf_read_index[read_count]<=single_buf_size)//å¦‚æœå†…å­˜å—æœ‰è¶³å¤Ÿå‰©ä½™ï¼ˆå‰©ä½™é‡æ¯”lenå¤§ï¼‰
+	{
+		SDL_MixAudio(stream,audiobuf[read_count]+audio_buf_read_index[read_count],len,SDL_MIX_MAXVOLUME);//æ ¸å¿ƒåŠŸèƒ½å¥ï¼Œå°†å¸§ä¸­è§£æå‡ºæ¥çš„æ•°æ®æµè¾“å…¥streamå¹¶è¾“å‡º
+		audio_buf_read_index[read_count]+= len;//ç¡®å®šä¸‹ä¸€æ®µè¦æ’­æ”¾çš„ä¿¡æ¯
+	}
+	else//å†…å­˜å—å‰©ä½™é‡ä¸è¶³lené•¿åº¦äº†
+	{
+		next_write=true;//é€šçŸ¥éŸ³é¢‘å†™å…¥å†…å­˜æœåŠ¡å¯ä»¥ç»§ç»­äº†
+		if(len>50000)cout<<"å¤§äº50000\n";
+		uint8_t temp[50000]={0};//åˆ›å»ºä¸´æ—¶ç¼“å­˜å—
+		int remain_size=single_buf_size-audio_buf_read_index[read_count];//ç¡®è®¤å½“å‰è¯»å–çš„ç¼“å­˜å—å‰©ä½™å¤§å°
+		memcpy(temp,audiobuf[read_count]+audio_buf_read_index[read_count],remain_size);//å°†å‰©ä½™éƒ¨åˆ†å†…å®¹copyåˆ°æ–°åˆ›å»ºçš„ä¸´æ—¶ç¼“å­˜å—é‡Œ
+		audio_buf_write_index[write_count]=0;//è¯¥ç¼“å­˜å—å†™å…¥åç§»é‡ç½®0ï¼Œå†™æœåŠ¡åˆ‡æ¢å†…å­˜å—åï¼Œåˆ‡æ¢å‰çš„å†…å­˜å—å†™å…¥åç§»é‡ä¸ç½®0ï¼Œåœ¨è¿™é‡Œç½®0
+		read_count++;if(read_count>=bufnumber)read_count=0;//å¦‚æœå·²ç»æ˜¯æœ€å¤§å†…å­˜å—äº†ï¼Œé‡æ–°è¯»å–æœ€åˆçš„å†…å­˜å—
+		memcpy(temp,audiobuf[read_count]+remain_size,len-remain_size);//è¯»å–æ–°å†…å­˜å—çš„å‰©ä½™éƒ¨åˆ†é‡ï¼Œå³len-remain_size
+		SDL_MixAudio(stream,temp,len,SDL_MIX_MAXVOLUME);//å°†ä¸´æ—¶ç¼“å­˜å—çš„å†…å®¹è¾“å…¥éŸ³é¢‘è¾“å‡ºæµ
+		cout<<read_count<<"åˆ‡æ¢è¯»\n";
+		if(audio_over&&audio_buf_write_index[read_count]==0){output_over=true;cout<<"ç»“æŸäº†\n";}//å¦‚æœéŸ³é¢‘æ²¡å¸§äº†ä¸”ä¸‹ä¸€å—å†…å­˜å†…å®¹ä¸ºç©ºï¼Œå®£å¸ƒè¾“å‡ºå½»åº•ç»“æŸoutput_over=true
+		audio_buf_read_index[read_count]= len-remain_size;//ç¡®å®šä¸‹ä¸€æ®µè¦æ’­æ”¾çš„ä¿¡æ¯
+	}
+
+	if(queque_number==10000)//å¦‚æœåˆ—é˜Ÿå·ç è¿‡å¤§
+		{cout<<10000<<endl;queque_number=0;}//é˜Ÿåˆ—å·ç åˆ·æ–°ä¸º-1
+	else
+		queque_number++;//é˜Ÿåˆ—å·ç +1ï¼Œä¸‹ä¸€ä¸ªæ‹¿åˆ°å·ç çš„å¯ä»¥å¼€å§‹æ’­æ”¾äº†
 }
 
 void process_audio_function()
 {
-	cout<<"¿ªÊ¼·ÖÎöÎÄ¼şÒôÆµ\n";
+	cout<<"å¼€å§‹åˆ†ææ–‡ä»¶éŸ³é¢‘\n";
 
-	int ret=0;//´¢´æffmpeg²Ù×÷·¢À´µÄ´íÎóÂë
-	char buf[1024]={0};//´¢´æffmpeg²Ù×÷·¢À´µÄ´íÎóĞÅÏ¢
+	int ret=0;//å‚¨å­˜ffmpegæ“ä½œå‘æ¥çš„é”™è¯¯ç 
+	char buf[1024]={0};//å‚¨å­˜ffmpegæ“ä½œå‘æ¥çš„é”™è¯¯ä¿¡æ¯
 
-	AVPacket *pAPacket = av_packet_alloc();;                        // ffmpagµ¥Ö¡Êı¾İ°ü
-	AVFormatContext* pAFormatContext = avformat_alloc_context();    // ÖØĞÂ·ÖÅäÉÏÏÂÎÄ£¬Ã²ËÆÎŞ·¨ÓëÖ÷Ïß³ÌÖĞ½âÎöÊÓÆµÖ¡µÄÉÏÏÂÎÄ¹²ÓÃ
+	AVPacket *pAPacket = av_packet_alloc();;                        // ffmpagå•å¸§æ•°æ®åŒ…
+	AVFormatContext* pAFormatContext = avformat_alloc_context();    // é‡æ–°åˆ†é…ä¸Šä¸‹æ–‡ï¼Œè²Œä¼¼æ— æ³•ä¸ä¸»çº¿ç¨‹ä¸­è§£æè§†é¢‘å¸§çš„ä¸Šä¸‹æ–‡å…±ç”¨
 	//----------------------------------------------------------------------------------------------------------
-	// ´ò¿ªÎÄ¼ş(ffmpeg³É¹¦Ôò·µ»Ø0),°ó¶¨pAFormatContextºÍrtspUrl
-    if(avformat_open_input(&pAFormatContext,rtspUrl, NULL, NULL)){av_strerror(ret, buf, 1024);cout<<"´ò¿ªÊ§°Ü,´íÎó±àºÅ:"<<ret;return;}
+	// æ‰“å¼€æ–‡ä»¶(ffmpegæˆåŠŸåˆ™è¿”å›0),ç»‘å®špAFormatContextå’ŒrtspUrl
+    if(avformat_open_input(&pAFormatContext,rtspUrl, NULL, NULL)){av_strerror(ret, buf, 1024);cout<<"æ‰“å¼€å¤±è´¥,é”™è¯¯ç¼–å·:"<<ret;return;}
 	
-	cout<<"-------------------------------------ffmpeg·ÖÎöĞÅÏ¢-----------------------\n";
+	cout<<"-------------------------------------ffmpegåˆ†æä¿¡æ¯-----------------------\n";
 	av_dump_format(pAFormatContext, 0, rtspUrl, 0);
-	cout<<"-------------------------------------ffmpeg·ÖÎö½áÊø-----------------------\n";
+	cout<<"-------------------------------------ffmpegåˆ†æç»“æŸ-----------------------\n";
 
-	int audioIndex ;//= av_find_best_stream(pAFormatContext, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);if(audioIndex<0){cout<<audioIndex<<"ÎŞÒôÆµ\n";return;}
+	int audioIndex ;//= av_find_best_stream(pAFormatContext, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);if(audioIndex<0){cout<<audioIndex<<"æ— éŸ³é¢‘\n";return;}
 	for(int index = 0; index < pAFormatContext->nb_streams; index++)
     { 
         switch (pAFormatContext->streams[index]->codec->codec_type)
         {
-			case AVMEDIA_TYPE_UNKNOWN:					cout << "Á÷ĞòºÅ:" << index << "ÀàĞÍÎª:AVMEDIA_TYPE_UNKNOWN\n";break;
-			case AVMEDIA_TYPE_VIDEO:					cout << "Á÷ĞòºÅ:" << index << "ÀàĞÍÎª:AVMEDIA_TYPE_VIDEO\n";break;
-			case AVMEDIA_TYPE_AUDIO:audioIndex = index;	cout << "Á÷ĞòºÅ:" << index << "ÀàĞÍÎª:AVMEDIA_TYPE_AUDIO\n";break;
-			case AVMEDIA_TYPE_DATA:						cout << "Á÷ĞòºÅ:" << index << "ÀàĞÍÎª:AVMEDIA_TYPE_DATA\n";break;
-			case AVMEDIA_TYPE_SUBTITLE:					cout << "Á÷ĞòºÅ:" << index << "ÀàĞÍÎª:AVMEDIA_TYPE_SUBTITLE\n";break;
-			case AVMEDIA_TYPE_ATTACHMENT:				cout << "Á÷ĞòºÅ:" << index << "ÀàĞÍÎª:AVMEDIA_TYPE_ATTACHMENT\n";break;
-			case AVMEDIA_TYPE_NB:						cout << "Á÷ĞòºÅ:" << index << "ÀàĞÍÎª:AVMEDIA_TYPE_NB\n";break;
+			case AVMEDIA_TYPE_UNKNOWN:					cout << "æµåºå·:" << index << "ç±»å‹ä¸º:AVMEDIA_TYPE_UNKNOWN\n";break;
+			case AVMEDIA_TYPE_VIDEO:					cout << "æµåºå·:" << index << "ç±»å‹ä¸º:AVMEDIA_TYPE_VIDEO\n";break;
+			case AVMEDIA_TYPE_AUDIO:audioIndex = index;	cout << "æµåºå·:" << index << "ç±»å‹ä¸º:AVMEDIA_TYPE_AUDIO\n";break;
+			case AVMEDIA_TYPE_DATA:						cout << "æµåºå·:" << index << "ç±»å‹ä¸º:AVMEDIA_TYPE_DATA\n";break;
+			case AVMEDIA_TYPE_SUBTITLE:					cout << "æµåºå·:" << index << "ç±»å‹ä¸º:AVMEDIA_TYPE_SUBTITLE\n";break;
+			case AVMEDIA_TYPE_ATTACHMENT:				cout << "æµåºå·:" << index << "ç±»å‹ä¸º:AVMEDIA_TYPE_ATTACHMENT\n";break;
+			case AVMEDIA_TYPE_NB:						cout << "æµåºå·:" << index << "ç±»å‹ä¸º:AVMEDIA_TYPE_NB\n";break;
 			default:break;
         }
-        if(audioIndex >0)// ÒÑ¾­ÕÒ´òÊÓÆµÆ·Á÷,Ìø³öÑ­»·
+        if(audioIndex >0)// å·²ç»æ‰¾æ‰“è§†é¢‘å“æµ,è·³å‡ºå¾ªç¯
 		{break;}
-    }//ÌáÈ¡½áÊø
+    }//æå–ç»“æŸ
 	AudioIndex=audioIndex;
-	if(audioIndex<0){cout<<"ÎŞÒôÆµ\n";audio_over=true;output_over=true;return;}
+	if(audioIndex<0){cout<<"æ— éŸ³é¢‘\n";audio_over=true;output_over=true;return;}
 
-	AVCodecContext *pAudioCodecCtx =avcodec_alloc_context3(NULL);//´ËÁ½¾ä»°¿ÉÓÃÀÏ°æ±¾¸ÅÀ¨£ºAVCodecContext *pAudioCodecCtx = pAFormatContext->streams[audioIndex]->codec;
+	AVCodecContext *pAudioCodecCtx =avcodec_alloc_context3(NULL);//æ­¤ä¸¤å¥è¯å¯ç”¨è€ç‰ˆæœ¬æ¦‚æ‹¬ï¼šAVCodecContext *pAudioCodecCtx = pAFormatContext->streams[audioIndex]->codec;
 	avcodec_parameters_to_context(pAudioCodecCtx,pAFormatContext->streams[audioIndex]->codecpar);
+	AVStream *pAStream = pAFormatContext->streams[audioIndex];
+    AVCodec *pAudioCodec = avcodec_find_decoder(pAudioCodecCtx->codec_id);//æ‰¾åˆ°é€‚åˆçš„è§£ç å™¨
+    pAudioCodecCtx->pkt_timebase=pAFormatContext->streams[audioIndex]->time_base;//ä¸åŠ è¿™å¥ï¼Œä¼šå‡ºç°ï¼šmp3floatï¼šCould not update timestamps for skipped samples
+	assert(avcodec_open2(pAudioCodecCtx, pAudioCodec, nullptr) >= 0);
 	
-    AVCodec *pAudioCodec = avcodec_find_decoder(pAudioCodecCtx->codec_id);//ÕÒµ½ÊÊºÏµÄ½âÂëÆ÷
-    assert(avcodec_open2(pAudioCodecCtx, pAudioCodec, nullptr) >= 0);
-
     SDL_AudioSpec desired_spec;
     SDL_AudioSpec obtained_spec;
+	cout<<"éŸ³é¢‘æ€»å¸§æ•°:"	<<pAStream->nb_frames<<endl;
+	cout<<"éŸ³é¢‘æ€»æ—¶é•¿:"	<<pAStream->duration/10000.0	<<"ç§’\n";
+	cout<<"éŸ³é¢‘é‡‡æ ·ç‡:"	<<pAudioCodecCtx->sample_rate	<<endl;
+	cout<<"è¾“å‡ºæ ¼å¼:"	<<AUDIO_F32SYS					<<endl;
+	cout<<"å£°éŸ³é€šé“æ•°:"	<<pAudioCodecCtx->channels		<<endl;
 
-	cout<<"ÒôÆµ²ÉÑùÂÊ:"	<<pAudioCodecCtx->sample_rate	<<endl;
-	cout<<"Êä³ö¸ñÊ½:"	<<AUDIO_F32SYS					<<endl;
-	cout<<"ÉùÒôÍ¨µÀÊı:"	<<pAudioCodecCtx->channels		<<endl;
-
-	if(pAudioCodecCtx->sample_rate<=0)//mp3Ã²ËÆpAudioCodecCtx->sample_rate¶¼ÊÇ0£¿µ¼ÖÂÊä³öµÄÉùÒôºÜÂıºÜÆæ¹Ö£¡
-		desired_spec.freq = 44100;//¸ÃÎÄ¼ş²ÉÑùÂÊÊıÖµµÄÈ·Îª0£¬mp3µÄÒôÆµ²ÉÑùÂÊÄ¬ÈÏÉèÖÃÎª44100
+	if(pAudioCodecCtx->sample_rate<=0)//mp3è²Œä¼¼pAudioCodecCtx->sample_rateéƒ½æ˜¯0ï¼Ÿå¯¼è‡´è¾“å‡ºçš„å£°éŸ³å¾ˆæ…¢å¾ˆå¥‡æ€ªï¼
+		desired_spec.freq = 44100;//è¯¥æ–‡ä»¶é‡‡æ ·ç‡æ•°å€¼çš„ç¡®ä¸º0ï¼Œmp3çš„éŸ³é¢‘é‡‡æ ·ç‡é»˜è®¤è®¾ç½®ä¸º44100
 	else
-		desired_spec.freq = pAudioCodecCtx->sample_rate;//¸ÃÎÄ¼şÓĞËü×Ô¼ºµÄ²ÉÑùÂÊ,¿ÉÒÔÍ¨¹ı±ä»¯desired_spec.freqµÄÖµÀ´¸Ä±ä²¥·ÅËÙ¶È,ºóÃæ¼ÓÉÏ*x¾ÍÊÇ·­x±¶
+		desired_spec.freq = pAudioCodecCtx->sample_rate;//è¯¥æ–‡ä»¶æœ‰å®ƒè‡ªå·±çš„é‡‡æ ·ç‡,å¯ä»¥é€šè¿‡å˜åŒ–desired_spec.freqçš„å€¼æ¥æ”¹å˜æ’­æ”¾é€Ÿåº¦,åé¢åŠ ä¸Š*xå°±æ˜¯ç¿»xå€
+	audio_fre=desired_spec.freq;
     desired_spec.format = AUDIO_F32SYS;					
     desired_spec.channels = pAudioCodecCtx->channels;	
     desired_spec.silence = 0;
     desired_spec.samples = SDL_AUDIO_BUFFER_SIZE;
-    desired_spec.callback = audio_callback;//ÉèÖÃÒôÆµ»Øµ÷º¯ÊıÎªaudio_callback()
-	CoInitialize(NULL);//SDL²Ù×÷£¬Ïß³ÌÎŞ·¨Ö±½ÓÊ¹ÓÃÖ÷Ïß³Ìshow_moive()ÖĞ³õÊ¼»¯ºóµÄSDL£¬¼ÓÁËÕâ¾ä²ÅÄÜÊ¹ÓÃÖ÷Ïß³ÌÀï³õÊ¼»¯ºóµÄSDL£¬ÏÂÃæÄÇ¾ä²Å²»»á±¨´í
-    assert(SDL_OpenAudio(&desired_spec, &obtained_spec) >= 0);
-
+    desired_spec.callback = audio_callback;//è®¾ç½®éŸ³é¢‘å›è°ƒå‡½æ•°ä¸ºaudio_callback()
+	CoInitialize(NULL);//SDLæ“ä½œï¼Œçº¿ç¨‹æ— æ³•ç›´æ¥ä½¿ç”¨ä¸»çº¿ç¨‹show_moive()ä¸­åˆå§‹åŒ–åçš„SDLï¼ŒåŠ äº†è¿™å¥æ‰èƒ½ä½¿ç”¨ä¸»çº¿ç¨‹é‡Œåˆå§‹åŒ–åçš„SDLï¼Œä¸‹é¢é‚£å¥æ‰ä¸ä¼šæŠ¥é”™
+    assert(SDL_OpenAudio(&desired_spec, &obtained_spec) >= 0);//å¼€å¯SDLéŸ³é¢‘æ’­æ”¾
 	SDL_PauseAudio(0);
 	//----------------------------------------------------------------------------------------------------------
-	while(av_read_frame(pAFormatContext, pAPacket) >= 0)//µ±ÎÄ¼şÄÚÈİÃ»ÓĞµ½Í·Ê±£¬½â°ü·ÖÎö
-    {
 
-		if(pAPacket->stream_index == audioIndex)//Èç¹ûµ±Ç°°üÄÚĞÅÏ¢ÎªÒôÆµĞÅÏ¢£¬½âÂë£¬²»ÊÇÒôÆµÔòºöÊÓ£¬¾­¹ıµÈ´ıºó½øĞĞÏÂ´Î½â°ü
+	while(av_read_frame(pAFormatContext, pAPacket) >= 0)//å½“æ–‡ä»¶å†…å®¹æ²¡æœ‰åˆ°å¤´æ—¶ï¼Œè§£åŒ…åˆ†æ
+    {
+		if(pAPacket->stream_index == audioIndex)//å¦‚æœå½“å‰åŒ…å†…ä¿¡æ¯ä¸ºéŸ³é¢‘ä¿¡æ¯ï¼Œè§£ç ï¼Œä¸æ˜¯éŸ³é¢‘åˆ™å¿½è§†ï¼Œç»è¿‡ç­‰å¾…åè¿›è¡Œä¸‹æ¬¡è§£åŒ…
 		{
-				
 			avcodec_send_packet(pAudioCodecCtx, pAPacket);
-			AVFrame *frame = av_frame_alloc();//·ÖÅäÖ¡¿Õ¼ä
-			while(avcodec_receive_frame(pAudioCodecCtx, frame) >= 0)//½âÂë¿ªÊ¼
+			AVFrame *frame = av_frame_alloc();//åˆ†é…å¸§ç©ºé—´
+			while(avcodec_receive_frame(pAudioCodecCtx, frame) >= 0)//è§£ç å¼€å§‹
 			{
 				int uSampleSize = 4;
-				int data_size = uSampleSize * pAudioCodecCtx->channels * frame->nb_samples;//È·ÈÏ²¥·ÅĞÅÏ¢×Ö½ÚÊı´óĞ¡
-				audio_fre=data_size;
-				uint8_t *pBufferIterator= audiobuf[write_count]+audio_buf_write_index[write_count];//´´½¨Ö¸Õë£¬Ö¸Ïòµ±Ç°ÄÚ´æÌõÃ»Ğ´µÄ²¿·Ö
+				int data_size = uSampleSize * pAudioCodecCtx->channels * frame->nb_samples;//ç¡®è®¤æ’­æ”¾ä¿¡æ¯å­—èŠ‚æ•°å¤§å°
+				audio_framesize=data_size;
+
 				for(int i=0;i<frame->nb_samples;i++)
 				{
 					for(int j=0;j<pAudioCodecCtx->channels;j++)
 					{
-						memcpy(pBufferIterator, frame->data[j] + uSampleSize * i, uSampleSize);//½«ÒôÆµĞÅÏ¢Ñ¹ÈëÄÚ´æÌõ£¬µÈ´ı»Øµ÷º¯Êı¶ÁÈ¡¸ÃÊı¾İ²¢½øĞĞ²¥·Å
-						pBufferIterator += uSampleSize;//Ö¸ÕëÆ«ÒÆÁ¿Ôö¼Ó
+						if(audio_buf_write_index[write_count]+uSampleSize<=single_buf_size)//å¦‚æœå†™å…¥ç¼“å­˜æœ‰è¶³å¤Ÿå‰©ä½™
+						{
+							memcpy(audiobuf[write_count]+audio_buf_write_index[write_count], frame->data[j] + uSampleSize * i, uSampleSize);//æ­£å¸¸å†™å…¥å…¨å±€å†…å­˜å—ï¼Œç­‰å¾…éŸ³é¢‘å›è°ƒå‡½æ•°è°ƒç”¨è¯¥å†…å­˜å—è¯»å–ï¼Œå›è°ƒå‡½æ•°è¯»å–åè‡ªåŠ¨æ’­æ”¾
+							audio_buf_write_index[write_count] +=uSampleSize;//ç¼“å­˜å—å†™å…¥åç§»é‡å¢åŠ 
+						}
+						else//ç¼“å­˜å‰©ä½™ä¸è¶³äº†ï¼Œè¦åˆ‡æ¢ç¼“å­˜å—è¿›è¡Œå†™å…¥
+						{
+							int remain_size=single_buf_size-audio_buf_write_index[write_count];//å› ä¸ºä¼šè¶…ï¼Œæ‰€ä»¥å°†æ€»å®¹é‡å‡å»åç§»é‡å¾—åˆ°å‰©ä½™é‡ï¼Œå¡«æ»¡å‰©ä½™é‡
+							memcpy(audiobuf[write_count]+audio_buf_write_index[write_count], frame->data[j] + uSampleSize * i, remain_size);//å…ˆå†™æ»¡å½“å‰ç¼“å­˜å—ï¼Œæ²¡å†™å…¥çš„ç­‰ä¼šå„¿å†™å…¥
+							write_count++;if(write_count>=bufnumber)write_count=0;//åˆ‡æ¢ç¼“å­˜å—ï¼Œå¦‚æœç¼“å­˜å—åˆ°è¾¾ä¸Šé™ï¼Œé‡ç½®ä¸ºç¬¬ä¸€å—
+							memset(audiobuf[write_count],0,sizeof(audiobuf[write_count]));//æ¸…ç©ºå³å°†è¦å†™å…¥çš„å†…å­˜å—çš„åŸæœ‰å†…å®¹
+							memcpy(audiobuf[write_count], frame->data[j] + uSampleSize * i+remain_size, uSampleSize-remain_size);//å°†å‰©ä½™æ²¡å†™å…¥çš„éƒ¨åˆ†å†™å…¥
+							audio_buf_write_index[write_count]=uSampleSize-remain_size;//ç¼“å­˜å—å†™å…¥åç§»é‡å¢åŠ 
+							cout<<write_count<<"åˆ‡æ¢å†™\n";//æ‰“å°åˆ‡æ¢è®°å½•
+							while(!next_write){}//åˆ‡æ¢è¿‡ç¼“å­˜å—äº†ï¼Œç­‰å¾…å›è°ƒå‡½æ•°è¿”å›next_writeä¿¡å·ï¼Œè¿”å›åå†™æ»¡ä¸‹ä¸€æ¡ç¼“å­˜å—
+							next_write=false;//å°†â€œä½ å¯ä»¥å¼€å§‹å†™ä¸‹ä¸€å—å†…å­˜å—äº†â€ä¿¡å·ç½®å¦
+						}
 					}
 				}
-				audio_buf_write_index[write_count] += data_size;//ÄÚ´æÆ«ÒÆÁ¿Ôö¼Ó
 				
-				if(audio_buf_write_index[write_count]>(sizeof(audiobuf[0])-data_size))//Èç¹ûÆ«ÒÆºóÄÚ´æ¿éÓÃÍêÁË£¬ÇĞ»»ÄÚ´æ¿é£¬Ò»¹²bufnumber¿éÄÚ´æÌõ
-				{
-					write_count++;//ÇĞ»»µ±Ç°ÄÚ´æ¿é
-					if(write_count>=bufnumber)write_count=0;//Èç¹ûÄÚ´æ¿é´ïµ½bufnumberÉÏÏŞ,ÖØĞÂÍùÊ×¿éÊäÈë
-					audio_buf_write_index[write_count]=0;//ÄÚ´æ¿éÄÚ²¿Æ«ÒÆÁ¿ÖÃ0
-					memset(audiobuf[write_count],0,sizeof(audiobuf[write_count]));//Çå¿Õ¼´½«ÒªĞ´ÈëµÄÄÚ´æ¿éµÄÔ­ÓĞÄÚÈİ
-					cout<<write_count<<"ÇĞ»»Ğ´\n";//´òÓ¡ÇĞ»»¼ÇÂ¼
-					while(!next_write){}
-					next_write=false;
-				}//ÇĞ»»ÄÚ´æ¿é½áÊø
-			}//½âÂëÍê³É
-		}//Ò»Ö¡ÒôÆµ´¦Àí½áÊø
+			}//è§£ç å®Œæˆ
+		}//ä¸€å¸§éŸ³é¢‘å¤„ç†ç»“æŸ
 			
 			
-    }//½âÂë³¹µ×Íê³É£¬Õû¸öÎÄ¼ş¶ÁÍê£¬ËÀÑ­»·½áÊø
-	audio_over=true;//ÒôÆµ½âÂë½áÊø
-	while(!output_over){}//Èç¹ûÒôÆµ»Øµ÷Êä³ö»¹Ã»½áÊø
-	cout<<"SDL_Audio¹Ø±Õ\n";
-	SDL_CloseAudio();//ÒôÆµ¹Ø±Õ,²»Ö´ĞĞÕâ¾ä»°£¬SDL_Quit½«×èÈû
+    }//è§£ç å½»åº•å®Œæˆï¼Œæ•´ä¸ªæ–‡ä»¶è¯»å®Œï¼Œæ­»å¾ªç¯ç»“æŸ
+	audio_over=true;//éŸ³é¢‘è§£ç ç»“æŸ
+	cout<<"æ€»å…±ä¸º:"<<queque_number<<endl;
+	while(!output_over){}//å¦‚æœéŸ³é¢‘å›è°ƒè¾“å‡ºè¿˜æ²¡ç»“æŸ
+	cout<<"SDL_Audioå…³é—­\n";
+	SDL_CloseAudio();//éŸ³é¢‘å…³é—­,ä¸æ‰§è¡Œè¿™å¥è¯ï¼ŒSDL_Quitå°†é˜»å¡
 }
 
-void show_moive()//¶ÁÈ¡±¾µØÊÓÆµ
+void show_moive()//è¯»å–æœ¬åœ°è§†é¢‘
 {
 	video_pace=0;audio_pace=0;
-	//--------------------------------------------------ÒôÆµ¿ØÖÆ²ÎÊı³õÊ¼»¯------------------------------------------------------------------
-	audio_over=false;//µ±Ç°ÒôÆµÊä³öÃ»ÓĞ½áÊø
-	next_write=false;//µ±Ç°²»ÇĞ»»ÄÚ´æĞ´ÈëÒôÆµÊı¾İ
-	output_over=false;//µ±Ç°Êä³öµÈ´ıÁĞ¶ÓÃ»Êä³öÍê
-	output_number=0;//»Øµ÷ÀÛ¼Æ²¥·ÅÊıÇå¿Õ
-	for(int i=0;i<bufnumber;i++)memset(audiobuf[i],0,sizeof(audiobuf[i]));
-	read_count=0;write_count=0;//ÒôÆµµÄ¶ÁĞ´ÄÚ´æ¿é¶¼ÉèÖÃÎªµÚÒ»¿é£¬ÍùµÚÒ»¿éÀï¶Á£¬ÍùµÚÒ»¿éÀïĞ´
-	get_number=0;queque_number=0;//ÒôÆµ»Øµ÷º¯Êı¶ÓÁĞ·ÖÅä
-	audio_buf_read_index[0]=0;audio_buf_write_index[0]=0;//ÒôÆµÄÚ´æ¿éÆ«ÒÆÁ¿³õÊ¼»¯Îª0
-	//------------------------------------------------ÒôÆµ¿ØÖÆ²ÎÊı³õÊ¼»¯½áÊø-----------------------------------------------------------------
+	//--------------------------------------------------éŸ³é¢‘æ§åˆ¶å‚æ•°åˆå§‹åŒ–------------------------------------------------------------------
+	AudioIndex=-1;//åˆå§‹æ²¡æ‰¾åˆ°éŸ³é¢‘æ£€ç´¢
+	audio_over=false;//å½“å‰éŸ³é¢‘è¾“å‡ºæ²¡æœ‰ç»“æŸ
+	next_write=false;//å½“å‰ä¸åˆ‡æ¢å†…å­˜å†™å…¥éŸ³é¢‘æ•°æ®
+	output_over=false;//å½“å‰è¾“å‡ºç­‰å¾…åˆ—é˜Ÿæ²¡è¾“å‡ºå®Œ
+	for(int i=0;i<bufnumber;i++)memset(audiobuf[i],0,sizeof(audiobuf[i]));//æ¸…ç©ºæ‰€æœ‰å†…å­˜å—å†…å®¹
+	read_count=0;write_count=0;//éŸ³é¢‘çš„è¯»å†™å†…å­˜å—éƒ½è®¾ç½®ä¸ºç¬¬ä¸€å—ï¼Œå¾€ç¬¬ä¸€å—é‡Œè¯»ï¼Œå¾€ç¬¬ä¸€å—é‡Œå†™
+	get_number=0;queque_number=0;//éŸ³é¢‘å›è°ƒå‡½æ•°é˜Ÿåˆ—åˆ†é…
+	audio_buf_read_index[0]=0;audio_buf_write_index[0]=0;//éŸ³é¢‘å†…å­˜å—åç§»é‡åˆå§‹åŒ–ä¸º0
+	//------------------------------------------------éŸ³é¢‘æ§åˆ¶å‚æ•°åˆå§‹åŒ–ç»“æŸ-----------------------------------------------------------------
 
-    // ffmpegÏà¹Ø±äÁ¿Ô¤ÏÈ¶¨ÒåÓë·ÖÅä
-	AVFormatContext *pAVFormatContext	=avformat_alloc_context();	// ffmpegµÄÈ«¾ÖÉÏÏÂÎÄ£¬ËùÓĞffmpeg²Ù×÷¶¼ĞèÒª
-	AVPacket *pAVPacket					=av_packet_alloc();			// ffmpagµ¥Ö¡Êı¾İ°ü
-    AVStream *pAVStream					=0;							// ffmpegÁ÷ĞÅÏ¢£¬ÔÚÈ·ÈÏÏëÒªµÄÁ÷ĞÅÏ¢ºóÔÙ½øĞĞ¸³Öµ
-	AVFrame *pAVFrame					=av_frame_alloc();			// ffmpegµ¥Ö¡¸ñÊ½
-    AVCodecContext *vCodecCtx			=0;							// ffmpeg±àÂëÉÏÏÂÎÄ
-    AVCodec *vCodec						=0;							// ffmpeg±àÂëÆ÷
-    //AVFrame *pAVFrame					=0;							// ffmpegµ¥Ö¡»º´æ
-    AVFrame *pAVFrameRGB32				=av_frame_alloc();			// ffmpegµ¥Ö¡»º´æ×ª»»ÑÕÉ«¿Õ¼äºóµÄ»º´æ
-    struct SwsContext *pSwsContext		=0;							// ffmpeg±àÂëÊı¾İ¸ñÊ½×ª»»
-    AVDictionary *pAVDictionary			=0;							// ffmpegÊı¾İ×Öµä£¬ÓÃÓÚÅäÖÃÒ»Ğ©±àÂëÆ÷ÊôĞÔµÈ
-    int ret = 0;						// º¯ÊıÖ´ĞĞ½á¹û
-	char buf[1024]={0};					// º¯ÊıÖ´ĞĞ´íÎóºó·µ»ØĞÅÏ¢µÄ»º´æ
-    int videoIndex = -1;				// ÊÓÆµÁ÷ËùÔÚµÄĞòºÅ
-    int audioIndex = -1;				// ÒôÆµÁ÷ËùÔÚµÄĞòºÅ
-	int numBytes = 0;					// ½âÂëºóµÄÊı¾İ³¤¶È
-    unsigned char* outBuffer = 0;		// ½âÂëºóµÄÊı¾İ´æ·Å»º´æÇø
-	SYSTEMTIME startTime,nextTime;		// ½âÂëÇ°Ê±¼ä//½âÂëÍê³ÉÊ±¼ä
+    // ffmpegç›¸å…³å˜é‡é¢„å…ˆå®šä¹‰ä¸åˆ†é…
+	AVFormatContext *pAVFormatContext	=avformat_alloc_context();	// ffmpegçš„å…¨å±€ä¸Šä¸‹æ–‡ï¼Œæ‰€æœ‰ffmpegæ“ä½œéƒ½éœ€è¦
+	AVPacket *pAVPacket					=av_packet_alloc();			// ffmpagå•å¸§æ•°æ®åŒ…
+    AVStream *pAVStream					=0;							// ffmpegæµä¿¡æ¯ï¼Œåœ¨ç¡®è®¤æƒ³è¦çš„æµä¿¡æ¯åå†è¿›è¡Œèµ‹å€¼
+	AVFrame *pAVFrame					=av_frame_alloc();			// ffmpegå•å¸§æ ¼å¼
+    AVCodecContext *vCodecCtx			=0;							// ffmpegç¼–ç ä¸Šä¸‹æ–‡
+    AVCodec *vCodec						=0;							// ffmpegç¼–ç å™¨
+    //AVFrame *pAVFrame					=0;							// ffmpegå•å¸§ç¼“å­˜
+    AVFrame *pAVFrameRGB32				=av_frame_alloc();			// ffmpegå•å¸§ç¼“å­˜è½¬æ¢é¢œè‰²ç©ºé—´åçš„ç¼“å­˜
+    struct SwsContext *pSwsContext		=0;							// ffmpegç¼–ç æ•°æ®æ ¼å¼è½¬æ¢
+    AVDictionary *pAVDictionary			=0;							// ffmpegæ•°æ®å­—å…¸ï¼Œç”¨äºé…ç½®ä¸€äº›ç¼–ç å™¨å±æ€§ç­‰
+    int ret = 0;						// å‡½æ•°æ‰§è¡Œç»“æœ
+	char buf[1024]={0};					// å‡½æ•°æ‰§è¡Œé”™è¯¯åè¿”å›ä¿¡æ¯çš„ç¼“å­˜
+    int videoIndex = -1;				// è§†é¢‘æµæ‰€åœ¨çš„åºå·
+    int audioIndex = -1;				// éŸ³é¢‘æµæ‰€åœ¨çš„åºå·
+	int numBytes = 0;					// è§£ç åçš„æ•°æ®é•¿åº¦
+    unsigned char* outBuffer = 0;		// è§£ç åçš„æ•°æ®å­˜æ”¾ç¼“å­˜åŒº
+	SYSTEMTIME startTime,nextTime;		// è§£ç å‰æ—¶é—´//è§£ç å®Œæˆæ—¶é—´
+	int VideoTimeStamp=0;				// æ—¶é—´æˆ³ï¼Œé˜²æ­¢è§†é¢‘æ²¡æœ‰è‡ªå¸¦çš„pts
 	
-	//__int64 startTime = 0;			// ¼ÇÂ¼²¥·Å¿ªÊ¼
+	//__int64 startTime = 0;			// è®°å½•æ’­æ”¾å¼€å§‹
 
     if(!pAVFormatContext || !pAVPacket || !pAVFrame || !pAVFrameRGB32){cout << "Failed to alloc";return;}
 
-    // ²½ÖèÒ»£º×¢²áËùÓĞÈİÆ÷ºÍ±à½âÂëÆ÷£¨Ò²¿ÉÒÔÖ»×¢²áÒ»Àà£¬Èç×¢²áÈİÆ÷¡¢×¢²á±àÂëÆ÷µÈ£©
+    // æ­¥éª¤ä¸€ï¼šæ³¨å†Œæ‰€æœ‰å®¹å™¨å’Œç¼–è§£ç å™¨ï¼ˆä¹Ÿå¯ä»¥åªæ³¨å†Œä¸€ç±»ï¼Œå¦‚æ³¨å†Œå®¹å™¨ã€æ³¨å†Œç¼–ç å™¨ç­‰ï¼‰
     av_register_all();
     avformat_network_init();
-    // ²½Öè¶ş£º´ò¿ªÎÄ¼ş(ffmpeg³É¹¦Ôò·µ»Ø0)
-    cout << "´ò¿ª:" << rtspUrl<<endl;
-    if(avformat_open_input(&pAVFormatContext,rtspUrl, NULL, NULL)){av_strerror(ret, buf, 1024);cout<<"´ò¿ªÊ§°Ü,´íÎó±àºÅ:"<<ret;return;}
-    // ²½ÖèÈı£ºÌ½²âÁ÷Ã½ÌåĞÅÏ¢
-    if(avformat_find_stream_info(pAVFormatContext, 0)< 0){cout << "avformat_find_stream_infoÊ§°Ü\n";return;}
-    // ²½ÖèËÄ£ºÌáÈ¡Á÷ĞÅÏ¢,ÌáÈ¡ÊÓÆµĞÅÏ¢
+    // æ­¥éª¤äºŒï¼šæ‰“å¼€æ–‡ä»¶(ffmpegæˆåŠŸåˆ™è¿”å›0)
+    cout << "æ‰“å¼€:" << rtspUrl<<endl;
+    if(avformat_open_input(&pAVFormatContext,rtspUrl, NULL, NULL)){av_strerror(ret, buf, 1024);cout<<"æ‰“å¼€å¤±è´¥,é”™è¯¯ç¼–å·:"<<ret;return;}
+    // æ­¥éª¤ä¸‰ï¼šæ¢æµ‹æµåª’ä½“ä¿¡æ¯
+    if(avformat_find_stream_info(pAVFormatContext, 0)< 0){cout << "avformat_find_stream_infoå¤±è´¥\n";return;}
+    // æ­¥éª¤å››ï¼šæå–æµä¿¡æ¯,æå–è§†é¢‘ä¿¡æ¯
     for(int index = 0; index < pAVFormatContext->nb_streams; index++)
     { 
         switch (pAVFormatContext->streams[index]->codec->codec_type)
         {
-			case AVMEDIA_TYPE_UNKNOWN:					cout << "\nÁ÷ĞòºÅ:" << index << "ÀàĞÍÎª:" << "AVMEDIA_TYPE_UNKNOWN"<<endl;break;
-			case AVMEDIA_TYPE_VIDEO:videoIndex = index;	cout << "\nÁ÷ĞòºÅ:" << index << "ÀàĞÍÎª:" << "AVMEDIA_TYPE_VIDEO"<<endl;break;
-			case AVMEDIA_TYPE_AUDIO:					cout << "\nÁ÷ĞòºÅ:" << index << "ÀàĞÍÎª:" << "AVMEDIA_TYPE_AUDIO"<<endl;break;
-			case AVMEDIA_TYPE_DATA:						cout << "\nÁ÷ĞòºÅ:" << index << "ÀàĞÍÎª:" << "AVMEDIA_TYPE_DATA"<<endl;break;
-			case AVMEDIA_TYPE_SUBTITLE:					cout << "\nÁ÷ĞòºÅ:" << index << "ÀàĞÍÎª:" << "AVMEDIA_TYPE_SUBTITLE"<<endl;break;
-			case AVMEDIA_TYPE_ATTACHMENT:				cout << "\nÁ÷ĞòºÅ:" << index << "ÀàĞÍÎª:" << "AVMEDIA_TYPE_ATTACHMENT"<<endl;break;
-			case AVMEDIA_TYPE_NB:						cout << "\nÁ÷ĞòºÅ:" << index << "ÀàĞÍÎª:" << "AVMEDIA_TYPE_NB"<<endl;break;
+			case AVMEDIA_TYPE_UNKNOWN:					cout << "\næµåºå·:" << index << "ç±»å‹ä¸º:" << "AVMEDIA_TYPE_UNKNOWN"<<endl;break;
+			case AVMEDIA_TYPE_VIDEO:videoIndex = index;	cout << "\næµåºå·:" << index << "ç±»å‹ä¸º:" << "AVMEDIA_TYPE_VIDEO"<<endl;break;
+			case AVMEDIA_TYPE_AUDIO:AudioIndex = index;	cout << "\næµåºå·:" << index << "ç±»å‹ä¸º:" << "AVMEDIA_TYPE_AUDIO"<<endl;break;
+			case AVMEDIA_TYPE_DATA:						cout << "\næµåºå·:" << index << "ç±»å‹ä¸º:" << "AVMEDIA_TYPE_DATA"<<endl;break;
+			case AVMEDIA_TYPE_SUBTITLE:					cout << "\næµåºå·:" << index << "ç±»å‹ä¸º:" << "AVMEDIA_TYPE_SUBTITLE"<<endl;break;
+			case AVMEDIA_TYPE_ATTACHMENT:				cout << "\næµåºå·:" << index << "ç±»å‹ä¸º:" << "AVMEDIA_TYPE_ATTACHMENT"<<endl;break;
+			case AVMEDIA_TYPE_NB:						cout << "\næµåºå·:" << index << "ç±»å‹ä¸º:" << "AVMEDIA_TYPE_NB"<<endl;break;
 			default:break;
         }
-        if(videoIndex != -1)// ÒÑ¾­ÕÒ´òÊÓÆµÆ·Á÷,Ìø³öÑ­»·
-		{vCodecCtx = pAVFormatContext->streams[index]->codec;pAVStream = pAVFormatContext->streams[index];break;}
-    }//ÌáÈ¡½áÊø
+        if(videoIndex != -1)// å·²ç»æ‰¾åˆ°è§†é¢‘å“æµ,è·³å‡ºå¾ªç¯
+		{
+			vCodecCtx = pAVFormatContext->streams[index]->codec;
+			pAVStream = pAVFormatContext->streams[index];break;}
+    }//æå–ç»“æŸ
+
 	VideoIndex=videoIndex;
-	if(videoIndex == -1 || !vCodecCtx){cout << "Failed to find video stream";return;}//ÅĞ¶ÏÊÇ·ñÕÒµ½ÊÓÆµÁ÷
+	if(videoIndex == -1 || !vCodecCtx)
+	{
+		cout << "Failed to find video stream";
+		if(AudioIndex<0)return;
+		else//å•çº¯æ’­æ”¾éŸ³é¢‘
+		{
+			if(SDL_Init(SDL_INIT_VIDEO| SDL_INIT_AUDIO | SDL_INIT_TIMER))//åˆå§‹åŒ–SDL 
+				{cout<<"Failed SDL_Init\n";				return;}
+			CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)process_audio_function, NULL, NULL, NULL);//å¼€å§‹éŸ³é¢‘çº¿ç¨‹éƒ¨ç½²å¹¶æ’­æ”¾
+			SDL_Delay(1000);
+			while(!output_over){Sleep(1000);}
+			SDL_Quit();
+		}
+	}//åˆ¤æ–­æ˜¯å¦æ‰¾åˆ°è§†é¢‘æµ
 	
-    // ²½ÖèÎå£º¶ÔÕÒµ½µÄÊÓÆµÁ÷Ñ°½âÂëÆ÷
+    // æ­¥éª¤äº”ï¼šå¯¹æ‰¾åˆ°çš„è§†é¢‘æµå¯»è§£ç å™¨
     vCodec = avcodec_find_decoder(vCodecCtx->codec_id);
     if(!vCodec){cout<<"Failed to avcodec_find_decoder(vCodecCtx->codec_id):"<< vCodecCtx->codec_id;return; }
-
-    // ²½ÖèÁù£º´ò¿ª½âÂëÆ÷    
-    av_dict_set(&pAVDictionary, "buffer_size", "1024000", 0);// ÉèÖÃ»º´æ´óĞ¡ 1024000byte    
-    av_dict_set(&pAVDictionary, "stimeout", "20000000", 0);// ÉèÖÃ³¬Ê±Ê±¼ä 20s    
-    av_dict_set(&pAVDictionary, "max_delay", "30000000", 0);// ÉèÖÃ×î´óÑÓÊ± 3s    
-    av_dict_set(&pAVDictionary, "rtsp_transport", "tcp", 0);// ÉèÖÃ´ò¿ª·½Ê½ tcp/udp
+	
+    // æ­¥éª¤å…­ï¼šæ‰“å¼€è§£ç å™¨    
+    av_dict_set(&pAVDictionary, "buffer_size", "1024000", 0);// è®¾ç½®ç¼“å­˜å¤§å° 1024000byte    
+    av_dict_set(&pAVDictionary, "stimeout", "20000000", 0);// è®¾ç½®è¶…æ—¶æ—¶é—´ 20s    
+    av_dict_set(&pAVDictionary, "max_delay", "30000000", 0);// è®¾ç½®æœ€å¤§å»¶æ—¶ 3s    
+    av_dict_set(&pAVDictionary, "rtsp_transport", "tcp", 0);// è®¾ç½®æ‰“å¼€æ–¹å¼ tcp/udp
+	
     if(avcodec_open2(vCodecCtx, vCodec, &pAVDictionary)){cout << "Failed to avcodec_open2(vCodecCtx, vCodec, pAVDictionary)";return;}
-    
-    // ÏÔÊ¾ÊÓÆµÏà¹ØµÄ²ÎÊıĞÅÏ¢£¨±àÂëÉÏÏÂÎÄ£©                            
-    cout<<"±ÈÌØÂÊ:"		<<vCodecCtx->bit_rate			<<endl;
-    cout<<"×ÜÊ±³¤:"		<<pAVStream->duration/10000.0	<<"Ãë\n";
-    cout<<"×ÜÖ¡Êı:"		<<pAVStream->nb_frames			<<endl;	
-    cout<<"¸ñÊ½:"		<<vCodecCtx->pix_fmt			<<endl;//¸ñÊ½Îª0ËµÃ÷ÊÇAV_PIX_FMT_YUV420P
-    cout<<"¿í:"			<<vCodecCtx->width				<<"\t¸ß£º"		<<vCodecCtx->height				<<endl;
-	cout<<"ÎÄ¼ş·ÖÄ¸:"	<<vCodecCtx->time_base.den		<<"\tÎÄ¼ş·Ö×Ó:"	<<vCodecCtx->time_base.num		<<endl;
-    cout<<"Ö¡ÂÊ·ÖÄ¸:"	<<pAVStream->avg_frame_rate.den	<<"\tÖ¡ÂÊ·Ö×Ó:"	<<pAVStream->avg_frame_rate.num	<<endl;
-    // ÓĞ×ÜÊ±³¤µÄÊ±ºò¼ÆËãÖ¡ÂÊ£¨½ÏÎª×¼È·£©
-	double fps=pAVStream->avg_frame_rate.num * 1.0f / pAVStream->avg_frame_rate.den;if(fps<=0){cout<<fps<<endl;return;}//Ö¡ÂÊ
-    double interval = 1 * 1000 / fps;//Ö¡¼ä¸ô
-    cout<<"Æ½¾ùÖ¡ÂÊ:"	<< fps<<endl;
-    cout<<"Ö¡¼ä¸ô:"		<< interval << "ms"<<endl;
 
-    // ²½ÖèÆß£º¶ÔÄÃµ½µÄÔ­Ê¼Êı¾İ¸ñÊ½½øĞĞËõ·Å×ª»»ÎªÖ¸¶¨µÄ¸ñÊ½¸ß¿í´óĞ¡  AV_PIX_FMT_YUV420P        vCodecCtx->pix_fmt AV_PIX_FMT_RGBA
+    // æ˜¾ç¤ºè§†é¢‘ç›¸å…³çš„å‚æ•°ä¿¡æ¯ï¼ˆç¼–ç ä¸Šä¸‹æ–‡ï¼‰                            
+    cout<<"æ¯”ç‰¹ç‡:"		<<vCodecCtx->bit_rate			<<endl;
+    cout<<"æ€»æ—¶é•¿:"		<<pAVStream->duration/10000.0	<<"ç§’\n";
+    cout<<"æ€»å¸§æ•°:"		<<pAVStream->nb_frames			<<endl;	
+    cout<<"æ ¼å¼:"		<<vCodecCtx->pix_fmt			<<endl;//æ ¼å¼ä¸º0è¯´æ˜æ˜¯AV_PIX_FMT_YUV420P
+    cout<<"å®½:"			<<vCodecCtx->width				<<"\té«˜ï¼š"		<<vCodecCtx->height				<<endl;
+	cout<<"æ–‡ä»¶åˆ†æ¯:"	<<vCodecCtx->time_base.den		<<"\tæ–‡ä»¶åˆ†å­:"	<<vCodecCtx->time_base.num		<<endl;
+    cout<<"å¸§ç‡åˆ†æ¯:"	<<pAVStream->avg_frame_rate.den	<<"\tå¸§ç‡åˆ†å­:"	<<pAVStream->avg_frame_rate.num	<<endl;
+    // æœ‰æ€»æ—¶é•¿çš„æ—¶å€™è®¡ç®—å¸§ç‡ï¼ˆè¾ƒä¸ºå‡†ç¡®ï¼‰
+	double fps=pAVStream->avg_frame_rate.num * 1.0f / pAVStream->avg_frame_rate.den;if(fps<=0){cout<<fps<<endl;return;}//å¸§ç‡
+    double interval = 1 * 1000 / fps;//å¸§é—´éš”
+    cout<<"å¹³å‡å¸§ç‡:"	<< fps<<endl;
+    cout<<"å¸§é—´éš”:"		<< interval << "ms"<<endl;
+
+    // æ­¥éª¤ä¸ƒï¼šå¯¹æ‹¿åˆ°çš„åŸå§‹æ•°æ®æ ¼å¼è¿›è¡Œç¼©æ”¾è½¬æ¢ä¸ºæŒ‡å®šçš„æ ¼å¼é«˜å®½å¤§å°  AV_PIX_FMT_YUV420P        vCodecCtx->pix_fmt AV_PIX_FMT_RGBA
     pSwsContext = sws_getContext(vCodecCtx->width,vCodecCtx->height,vCodecCtx->pix_fmt,vCodecCtx->width,vCodecCtx->height,AV_PIX_FMT_YUV420P,SWS_FAST_BILINEAR,0,0,0);
     numBytes = avpicture_get_size(AV_PIX_FMT_YUV420P,vCodecCtx->width,vCodecCtx->height);
     outBuffer = (unsigned char *)av_malloc(numBytes);
-    avpicture_fill((AVPicture *)pAVFrameRGB32,outBuffer,AV_PIX_FMT_YUV420P,vCodecCtx->width,vCodecCtx->height);//pAVFrame32µÄdataÖ¸ÕëÖ¸ÏòÁËoutBuffer
+    avpicture_fill((AVPicture *)pAVFrameRGB32,outBuffer,AV_PIX_FMT_YUV420P,vCodecCtx->width,vCodecCtx->height);//pAVFrame32çš„dataæŒ‡é’ˆæŒ‡å‘äº†outBuffer
 
-	//---------------------------------------------------------SDLÏà¹Ø±äÁ¿Ô¤ÏÈ¶¨Òå----------------------------------------------------------------
+	//---------------------------------------------------------SDLç›¸å…³å˜é‡é¢„å…ˆå®šä¹‰----------------------------------------------------------------
     SDL_Window *pSDLWindow = 0;
     SDL_Renderer *pSDLRenderer = 0;
     SDL_Surface *pSDLSurface = 0;
     SDL_Texture *pSDLTexture = 0;
     SDL_Event event;
 
-    if(SDL_Init(SDL_INIT_VIDEO| SDL_INIT_AUDIO | SDL_INIT_TIMER))//³õÊ¼»¯SDL 
+    if(SDL_Init(SDL_INIT_VIDEO| SDL_INIT_AUDIO | SDL_INIT_TIMER))//åˆå§‹åŒ–SDL 
 		{cout<<"Failed SDL_Init\n";				return;}
 	int set_width,set_height;
 	if(vCodecCtx->width>my_width)set_width=my_width;else set_width=vCodecCtx->width;
 	if(vCodecCtx->height>my_height) set_height=my_height;else set_height=vCodecCtx->height;
-	pSDLWindow = SDL_CreateWindow("ZasLeonPlayer",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,set_width,set_height,SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);//ÉèÖÃÏÔÊ¾¿ò´óĞ¡
+	pSDLWindow = SDL_CreateWindow("ZasLeonPlayer",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,set_width,set_height,SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);//è®¾ç½®æ˜¾ç¤ºæ¡†å¤§å°
     if(!pSDLWindow)
 		{cout<<"Failed SDL_CreateWindow\n";		return;}
     pSDLRenderer = SDL_CreateRenderer(pSDLWindow, -1, 0);
@@ -324,20 +351,19 @@ void show_moive()//¶ÁÈ¡±¾µØÊÓÆµ
     pSDLTexture = SDL_CreateTexture(pSDLRenderer,SDL_PIXELFORMAT_YV12,SDL_TEXTUREACCESS_STREAMING,vCodecCtx->width,vCodecCtx->height);
 	if(!pSDLTexture)
 		{cout<<"Failed SDL_CreateTexture\n";	return;}
-	//---------------------------------------------------------SDL¶¨Òå½áÊø------------------------------------------------------------------------
+	//---------------------------------------------------------SDLå®šä¹‰ç»“æŸ------------------------------------------------------------------------
 
-	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)process_audio_function, NULL, NULL, NULL);//¿ªÊ¼ÒôÆµÏß³Ì²¿Êğ²¢²¥·Å
-   
-	// ²½Öè°Ë£º¶ÁÈ¡Ò»Ö¡Êı¾İµÄÊı¾İ°ü
+	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)process_audio_function, NULL, NULL, NULL);//å¼€å§‹éŸ³é¢‘çº¿ç¨‹éƒ¨ç½²å¹¶æ’­æ”¾
+	
+	av_init_packet(pAVPacket);
+	// æ­¥éª¤å…«ï¼šè¯»å–ä¸€å¸§æ•°æ®çš„æ•°æ®åŒ…
     while(av_read_frame(pAVFormatContext, pAVPacket) >= 0)
     {
-		if(pAVPacket->stream_index ==AudioIndex)video_pace++;
-		
-		GetLocalTime(&startTime);//»ñÈ¡½âÂëÇ°¾«È·Ê±¼ä
-        if(pAVPacket->stream_index == videoIndex)//Èç¹û¸ÃÖ¡ÎªÊÓÆµÖ¡£¬ÊÓÆµ´¦Àí¿ªÊ¼
+		//GetLocalTime(&startTime);//è·å–è§£ç å‰ç²¾ç¡®æ—¶é—´
+        if(pAVPacket->stream_index == videoIndex)//å¦‚æœè¯¥å¸§ä¸ºè§†é¢‘å¸§ï¼Œè§†é¢‘å¤„ç†å¼€å§‹
         {
 			ret=avcodec_send_packet(vCodecCtx, pAVPacket);
-            if(ret){cout << "Failed to avcodec_send_packet(vCodecCtx, pAVPacket) ,ret =" << ret;break;}
+            if(ret){cout<<"avcodec_send_packetå¤±è´¥!,é”™è¯¯ç "<<ret;break;}
 			
             while(!avcodec_receive_frame(vCodecCtx, pAVFrame))
             {
@@ -346,31 +372,42 @@ void show_moive()//¶ÁÈ¡±¾µØÊÓÆµ
                 SDL_UpdateYUVTexture(pSDLTexture,NULL,pAVFrame->data[0], pAVFrame->linesize[0],pAVFrame->data[1], pAVFrame->linesize[1],pAVFrame->data[2], pAVFrame->linesize[2]);
 
                 SDL_RenderClear(pSDLRenderer);
-                // Texture¸´ÖÆµ½Renderer
+                // Textureå¤åˆ¶åˆ°Renderer
                 SDL_Rect sdlRect;
-                sdlRect.x=0;
-				sdlRect.y=0;
-				if(pAVFrame->width>my_width)sdlRect.w=my_width;else sdlRect.w=pAVFrame->width;
+                sdlRect.x=0;sdlRect.y=0;
+				if(pAVFrame->width>my_width)sdlRect.w=my_width;else sdlRect.w=pAVFrame->width;//æ›´æ–°æ˜¾ç¤ºæ¡†å¤§å°
 				if(pAVFrame->height>my_height)sdlRect.h = my_height;else sdlRect.h = pAVFrame->height;
 				
                 SDL_RenderCopy(pSDLRenderer, pSDLTexture, 0, &sdlRect) ;
-                SDL_RenderPresent(pSDLRenderer);// ¸üĞÂRendererÏÔÊ¾
-                SDL_PollEvent(&event);// ÊÂ¼ş´¦Àí
-            }   
-			if(output_over)//Èç¹ûÒôÆµÊä³ö½áÊø£¬Í¼Æ¬°´Í¼Æ¬Ö¡Ê±¼ä½øĞĞµÈ´ıºóË¢ĞÂ²¥·Å
+                SDL_RenderPresent(pSDLRenderer);// æ›´æ–°Rendereræ˜¾ç¤º
+                SDL_PollEvent(&event);// äº‹ä»¶å¤„ç†
+				//cout<<pAVFrame->pts<<"   "<<av_q2d(pAVStream->time_base)<<endl;
+				if(pAVFrame->pts>0)//æœ‰äº›å½±ç‰‡æ— æ€»å¸§æ•°æ— pts
+					video_pace=pAVFrame->pts*av_q2d(pAVStream->time_base);//æ›´æ–°è¯¥å¸§çš„æ—¶é—´ï¼Œå®ç°éŸ³è§†é¢‘åŒæ­¥
+				else
+					video_pace+=interval/float(1000);
+				//cout<<video_pace<<"   "<<audio_pace<<endl;
+					
+            }
+			/*if(audio_over||video_pace>audio_pace)//åŸå®ç°æ’­æ”¾å»¶è¿Ÿä»£ç 
 			{
-				GetLocalTime(&nextTime);//»ñÈ¡½âÂëºó¾«È·Ê±¼ä
-				if(nextTime.wMilliseconds<startTime.wMilliseconds)nextTime.wMilliseconds=nextTime.wMilliseconds+1000;//Èç¹û½âÂëºóºÁÃëĞ¡ÓÚ½âÂëÇ°£¬½âÂëºóÊ±¼ä+1000ºÁÃë²¹
-				int delaytime=int(interval)-int(nextTime.wMilliseconds-startTime.wMilliseconds);//¼ÆËã½âÂëÇ°ºóºÁÃë²î
-				if(delaytime<interval&&delaytime>0)Sleep(delaytime);//Õı³£ÑÓ³Ù£¬·ÀÖ¹²¥·ÅËÙ¶È¹ı¿ì£¬ÕâÀï¹ÊÒâdelaytime-1ÈÃ»­Ãæ¿ìÒ»µãË¢ĞÂ£¬¿¿ÏÂÃæµÄËÀÑ­»·²¹ÕıÍ¬²½
+				GetLocalTime(&nextTime);//è·å–è§£ç åç²¾ç¡®æ—¶é—´
+				if(nextTime.wMilliseconds<startTime.wMilliseconds)nextTime.wMilliseconds=nextTime.wMilliseconds+1000;//å¦‚æœè§£ç åæ¯«ç§’å°äºè§£ç å‰ï¼Œè§£ç åæ—¶é—´+1000æ¯«ç§’è¡¥
+				int delaytime=int(interval)-int(nextTime.wMilliseconds-startTime.wMilliseconds);//è®¡ç®—è§£ç å‰åæ¯«ç§’å·®
+				if(delaytime<interval&&delaytime>0)Sleep(delaytime);//æ­£å¸¸å»¶è¿Ÿï¼Œé˜²æ­¢æ’­æ”¾é€Ÿåº¦è¿‡å¿«ï¼Œè¿™é‡Œæ•…æ„delaytime-1è®©ç”»é¢å¿«ä¸€ç‚¹åˆ·æ–°ï¼Œé ä¸‹é¢çš„æ­»å¾ªç¯è¡¥æ­£åŒæ­¥
 			}
-			while(video_pace>audio_pace){if(video_pace==audio_pace)break;}//·ÀÖ¹»°Òô²»Í¬²½£¬¿¿ËÀÑ­»·µÈ´ıÀ´Í¬²½£¬ÕâÀï¹ÊÒâÉèÖÃÈÃÉùÒôÉÔÎ¢±È»­Ãæ¿ìÒ»Ö¡audio_pace+1
-        }//Ò»Ö¡ÊÓÆµ´¦Àí½áÊø
+			else//ç”»é¢æ¯”å£°éŸ³æ…¢äº†*/
 
-    }//ÊÓÆµ½âÂë³¹µ×Íê³É£¬ËÀÑ­»·½áÊø
-	cout<<"ÊÓÆµ½âÂë½áÊø\n";
-	while(!output_over){SDL_PollEvent(&event);Sleep(30);}//Èç¹ûÒôÆµÃ»Êä³öÍê£¬½øĞĞµÈ´ı
-	cout << "ÊÍ·Å»ØÊÕ×ÊÔ´,¹Ø±ÕSDL"<<endl;
+			while(video_pace>audio_pace&&!output_over){}//é˜²æ­¢è¯éŸ³ä¸åŒæ­¥ï¼Œé æ­»å¾ªç¯ç­‰å¾…æ¥åŒæ­¥.è¿™æ¡è¯­å¥ä»£æ›¿äº†ä¸Šé¢çš„â€œåŸå®ç°æ’­æ”¾å»¶è¿Ÿä»£ç â€
+			if(output_over){Sleep(int(interval/float(1000)));cout<<"s"<<int(interval)<<endl;}
+		
+
+        }//ä¸€å¸§è§†é¢‘å¤„ç†ç»“æŸ
+
+    }//è§†é¢‘è§£ç å½»åº•å®Œæˆï¼Œæ­»å¾ªç¯ç»“æŸ
+	cout<<"è§†é¢‘è§£ç ç»“æŸ\n";
+	while(!output_over){SDL_PollEvent(&event);Sleep(30);}//å¦‚æœéŸ³é¢‘æ²¡è¾“å‡ºå®Œï¼Œè¿›è¡Œç­‰å¾…
+	cout << "é‡Šæ”¾å›æ”¶èµ„æº,å…³é—­SDL"<<endl;
 	Sleep(500);
 	if(outBuffer){av_free(outBuffer);outBuffer = 0;}
 	if(pSwsContext){sws_freeContext(pSwsContext);pSwsContext = 0;}
@@ -380,11 +417,11 @@ void show_moive()//¶ÁÈ¡±¾µØÊÓÆµ
     if(vCodecCtx){avcodec_close(vCodecCtx);vCodecCtx = 0;}
     if(pAVFormatContext){avformat_close_input(&pAVFormatContext);avformat_free_context(pAVFormatContext);pAVFormatContext = 0;}
 	
-    // ²½ÖèÎå£ºÏú»ÙäÖÈ¾Æ÷
+    // æ­¥éª¤äº”ï¼šé”€æ¯æ¸²æŸ“å™¨
     SDL_DestroyRenderer(pSDLRenderer);
-    // ²½ÖèÁù£ºÏú»Ù´°¿Ú
-    SDL_DestroyWindow(pSDLWindow);cout<<"¼´½«Ö´ĞĞSDL_Quit()\n";
-    // ²½ÖèÆß£ºÍË³öSDL
+    // æ­¥éª¤å…­ï¼šé”€æ¯çª—å£
+    SDL_DestroyWindow(pSDLWindow);cout<<"å³å°†æ‰§è¡ŒSDL_Quit()\n";
+    // æ­¥éª¤ä¸ƒï¼šé€€å‡ºSDL
     SDL_Quit();
 	
 }
