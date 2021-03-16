@@ -1,7 +1,7 @@
 
 程序从test.cpp开始进入。
 
-播放源地址为rtspUrl字符串，后面跟个movie_type确认需要提供哪种播放服务。
+播放源地址为rtspUrl字符串（存放在audio_function.h里），修改播放源即可播放不同影片.rtspUrl后面跟个movie_type用来确认需要提供哪种播放服务。
 
 根据movie_type加载不同的播放服务。
 播放服务分为：
